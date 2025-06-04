@@ -1,0 +1,38 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin" // El plugin de Flutter debe ir después
+}
+
+android {
+    namespace "com.example.flutter_application_1" // Debe coincidir con tu AndroidManifest.xml
+    compileSdkVersion 34 // ✅ Cambiado a 34 según los requerimientos de Firebase y plugins
+
+    defaultConfig {
+        applicationId "com.example.flutter_application_1"
+        minSdkVersion 23
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+}
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug // Usa el debug keystore para pruebas
+        }
+    }
+}
+
+flutter {
+    source "../.."
+}
+
+apply plugin: 'com.google.gms.google-services' // Firebase si estás usando Auth, Storage, etc.

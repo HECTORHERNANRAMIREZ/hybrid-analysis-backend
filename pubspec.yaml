@@ -1,0 +1,44 @@
+name: flutter_application_1
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^3.11.0
+  firebase_auth: ^5.4.1
+  google_sign_in: ^6.2.1
+  http: ^0.13.5
+  firebase_storage: ^12.4.2
+  logger: ^2.0.2
+  path_provider: ^2.1.5
+  video_player: ^2.7.0
+  flutter_sms_inbox: ^1.0.3
+  connectivity_plus: ^4.0.2
+  url_launcher: ^6.2.5
+
+
+  # ✅ Plugins para análisis de SMS
+  permission_handler: ^11.3.0 
+    # ← 👈 Nuevo plugin agregado
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: Open
+      fonts:
+        - asset: fonts/open.ttf
+        - asset: fonts/negrita.ttf
+
+  
