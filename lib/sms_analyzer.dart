@@ -1,15 +1,10 @@
 // Importaciones necesarias
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart'; // Para gestionar permisos
-import 'package:flutter_sms_inbox/flutter_sms_inbox.dart'; // Para acceder a los SMS
-import 'dart:convert'; // Para codificar datos a JSON
-import 'package:http/http.dart' as http; // Para hacer solicitudes HTTP
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-/// Modelo de resultado del análisis de SMS
-/// Incluye:
-/// - cantidad de mensajes sospechosos encontrados,
-/// - un mensaje de ejemplo,
-/// - y la lista completa de mensajes sospechosos.
 class SmsAnalysisResult {
   final int count;
   final String? sampleMessage;
@@ -18,24 +13,17 @@ class SmsAnalysisResult {
   SmsAnalysisResult(this.count, this.sampleMessage, this.suspiciousMessages);
 }
 
-/// Función principal para analizar los SMS recibidos en los últimos 10 días
-/// - Solicita permiso
-/// - Lee los SMS
-/// - Filtra los recientes
-/// - Los envía al backend para analizar
-/// - Devuelve los resultados
 Future<SmsAnalysisResult> analyzeSMS(
   BuildContext context,
-  void Function(String?)
-      onIntermediateMessage, // Callback para mostrar mensajes mientras analiza
+  void Function(String?) onIntermediateMessage,
 ) async {
   final SmsQuery query = SmsQuery();
 
-  // Muestra mensaje inicial de análisis
-  onIntermediateMessage("🔍 Analizando mensajes SMS...");
+  // Breve espera y muestra mensaje inicial
+  await Future.delayed(const Duration(milliseconds: 300));
+  onIntermediateMessage("📩 Analizando SMS...");
 
-  // Solicita permiso de acceso a SMS
-  var status = await Permission.sms.request();
+  final status = await Permission.sms.request();
   if (!status.isGranted) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -46,10 +34,8 @@ Future<SmsAnalysisResult> analyzeSMS(
     return SmsAnalysisResult(0, null, []);
   }
 
-  // Obtiene todos los SMS del dispositivo
   final List<SmsMessage> messages = await query.getAllSms;
 
-  // Si no hay mensajes, muestra un cuadro de diálogo
   if (messages.isEmpty) {
     if (context.mounted) {
       showDialog(
@@ -64,7 +50,6 @@ Future<SmsAnalysisResult> analyzeSMS(
     return SmsAnalysisResult(0, null, []);
   }
 
-  // Filtra mensajes recibidos en los últimos 10 días
   final now = DateTime.now();
   final threshold = now.subtract(const Duration(days: 10));
   final recentMessages = messages.where((sms) {
@@ -76,7 +61,6 @@ Future<SmsAnalysisResult> analyzeSMS(
   String? sample;
   List<String> suspiciousList = [];
 
-  // Analiza cada mensaje usando el backend
   for (var sms in recentMessages) {
     final content = sms.body ?? '';
 
@@ -96,7 +80,7 @@ Future<SmsAnalysisResult> analyzeSMS(
     }
   }
 
-  // Limpia mensaje de análisis
+  await Future.delayed(const Duration(milliseconds: 300));
   onIntermediateMessage(null);
 
   return SmsAnalysisResult(count, sample, suspiciousList);

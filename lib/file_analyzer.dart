@@ -6,16 +6,20 @@ import 'dart:convert';
 Future<int> analyzeDownloadedFiles({
   required void Function(String?) onIntermediateMessage,
 }) async {
+  // Espera breve antes de mostrar el mensaje
+  await Future.delayed(const Duration(milliseconds: 300));
   onIntermediateMessage("📁 Analizando archivos descargados...");
 
   final status = await Permission.storage.request();
   if (!status.isGranted) {
+    await Future.delayed(const Duration(milliseconds: 300));
     onIntermediateMessage(null);
     return 0;
   }
 
   final downloadDir = Directory('/storage/emulated/0/Download');
   if (!downloadDir.existsSync()) {
+    await Future.delayed(const Duration(milliseconds: 300));
     onIntermediateMessage(null);
     return 0;
   }
@@ -45,6 +49,7 @@ Future<int> analyzeDownloadedFiles({
     }
   }
 
+  await Future.delayed(const Duration(milliseconds: 300));
   onIntermediateMessage(null);
   return detected;
 }

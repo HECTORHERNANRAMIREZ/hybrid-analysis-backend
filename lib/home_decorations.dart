@@ -15,9 +15,9 @@ Widget buildDecorativeSections({
   required double logoTop,
   required double logoLeft,
   required User user,
-  String? sampleMessage, // Mensaje de ejemplo tras análisis
-  String? analyzingMessage, // Mensaje temporal mientras analiza
-  int? fileThreatsCount, // 🔍 Nuevo: contador de archivos detectados
+  String? sampleMessage,
+  String? analyzingMessage,
+  int? fileThreatsCount,
 }) {
   return Stack(
     children: [
@@ -59,7 +59,6 @@ Widget buildDecorativeSections({
         ),
       ),
 
-      /// Icono de virus al lado izquierdo del indicador
       Positioned(
         top: 360,
         left: 25,
@@ -108,7 +107,6 @@ Widget buildDecorativeSections({
         ),
       ),
 
-      /// Icono de espía al lado izquierdo del indicador
       Positioned(
         top: 420,
         left: 25,
@@ -163,10 +161,7 @@ Widget buildDecorativeSections({
               ),
               const SizedBox(height: 6),
               Text(
-                // Muestra primero el mensaje de análisis, luego uno de ejemplo
-                analyzingMessage ??
-                    sampleMessage ??
-                    'Presiona "Analizar" para iniciar.',
+                analyzingMessage ?? 'Presiona "Analizar" para iniciar.',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -182,7 +177,7 @@ Widget buildDecorativeSections({
         ),
       ),
 
-      /// ───── BOTÓN DE SALIDA (Sign out y regresar) ─────
+      /// ───── BOTÓN DE SALIDA ─────
       Positioned(
         top: screenHeight * 0.04,
         left: screenWidth * 0.05,
@@ -191,7 +186,7 @@ Widget buildDecorativeSections({
             await FirebaseAuth.instance.signOut();
             await GoogleSignIn().signOut();
             if (!context.mounted) return;
-            Navigator.pop(context); // Regresa a la pantalla anterior
+            Navigator.pop(context);
           },
           child: Image.network(
             'https://firebasestorage.googleapis.com/v0/b/app12-5128a.firebasestorage.app/o/uploads%2Fvolver.png?alt=media&token=a35683dd-a13c-4918-8718-8c2a2815f246',
@@ -201,14 +196,14 @@ Widget buildDecorativeSections({
         ),
       ),
 
-      /// ───── PERFIL DEL USUARIO (Nombre y foto) ─────
+      /// ───── PERFIL DEL USUARIO ─────
       Positioned(
         top: screenHeight * 0.02,
         right: screenWidth * 0.05,
         child: Row(
           children: [
             Text(
-              user.displayName ?? '', // Muestra el nombre del usuario
+              user.displayName ?? '',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -217,8 +212,7 @@ Widget buildDecorativeSections({
             ),
             const SizedBox(width: 8),
             CircleAvatar(
-              backgroundImage:
-                  NetworkImage(user.photoURL ?? ''), // Foto del usuario
+              backgroundImage: NetworkImage(user.photoURL ?? ''),
               radius: 20,
             ),
           ],

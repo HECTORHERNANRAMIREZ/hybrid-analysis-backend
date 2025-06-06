@@ -34,7 +34,11 @@ class HomePageLayoutState extends State<HomePageLayout> {
       analyzingMessage = "🔍 Analizando un momento...";
     });
 
-    // Analiza SMS
+    await Future.delayed(const Duration(milliseconds: 400));
+    setState(() {
+      analyzingMessage = "📩 Analizando SMS...";
+    });
+
     final smsResult = await analyzeSMS(
       context,
       (intermediateText) {
@@ -44,7 +48,15 @@ class HomePageLayoutState extends State<HomePageLayout> {
       },
     );
 
-    // Analiza archivos y muestra mensaje "📁 Analizando archivos..."
+    setState(() {
+      analyzingMessage = null;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 400));
+    setState(() {
+      analyzingMessage = "📁 Analizando archivos descargados...";
+    });
+
     final fileCount = await analyzeDownloadedFiles(
       onIntermediateMessage: (intermediateText) {
         setState(() {
@@ -53,7 +65,6 @@ class HomePageLayoutState extends State<HomePageLayout> {
       },
     );
 
-    // Guarda resultados y limpia mensaje
     setState(() {
       suspiciousCount = smsResult.count;
       sampleMessage = smsResult.sampleMessage;
@@ -79,14 +90,9 @@ class HomePageLayoutState extends State<HomePageLayout> {
           children: [
             if (widget.videoController.value.isInitialized)
               widgets.buildBackgroundVideo(widget.videoController),
-
             widgets.buildBlurredCircle(screenWidth),
-
             widgets.buildAnalyzeButton(screenWidth, _startSmsAnalysis),
-
             widgets.buildSolveButton(screenWidth, suspiciousMessages, context),
-
-            // ✅ Indicador de SMS sospechosos
             Positioned(
               top: 300,
               left: 70,
@@ -123,7 +129,6 @@ class HomePageLayoutState extends State<HomePageLayout> {
                 ],
               ),
             ),
-
             Positioned(
               top: 300,
               left: 20,
@@ -133,12 +138,9 @@ class HomePageLayoutState extends State<HomePageLayout> {
                 height: 40,
               ),
             ),
-
             widgets.buildInfoButton(screenWidth, () {
               showInformationSMSDialog(context);
             }),
-
-            // ✅ Zona decorativa con resultados de análisis
             decorations.buildDecorativeSections(
               context: context,
               screenWidth: screenWidth,
@@ -148,8 +150,7 @@ class HomePageLayoutState extends State<HomePageLayout> {
               user: widget.user,
               sampleMessage: sampleMessage,
               analyzingMessage: analyzingMessage,
-              fileThreatsCount:
-                  virusCount, // 👈 contador de archivos detectados
+              fileThreatsCount: virusCount,
             ),
           ],
         ),
