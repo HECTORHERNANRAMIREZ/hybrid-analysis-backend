@@ -5,12 +5,15 @@ import os
 
 app = Flask(__name__)
 
-API_KEY = os.getenv("API_KEY")  # Lo configurarás en Railway
+# ✅ Carga de la API Key desde las variables de entorno en Railway
+API_KEY = os.getenv("API_KEY")
 
+# ✅ Ruta raíz para comprobar si la API está activa
 @app.route("/", methods=["GET"])
 def home():
     return "🚀 API de Hybrid Analysis activa"
 
+# ✅ Ruta para escanear un archivo con Hybrid Analysis
 @app.route("/escanear", methods=["POST"])
 def escanear_archivo():
     if 'file' not in request.files:
@@ -35,8 +38,8 @@ def escanear_archivo():
 
     job_id = respuesta.json().get("job_id")
 
-    # Paso 2: Consultar resultado
-    for _ in range(10):  # Espera ~60 segundos máximo
+    # Paso 2: Esperar el resultado hasta 60 segundos (~10 intentos)
+    for _ in range(10):
         time.sleep(6)
         r = requests.get(
             f"https://www.hybrid-analysis.com/api/v2/report/summary/{job_id}",
@@ -53,5 +56,6 @@ def escanear_archivo():
 
     return jsonify({"error": "No se obtuvo resultado a tiempo"}), 408
 
+# ✅ Configuración para producción en Railway
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
