@@ -3,13 +3,22 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-Future<int> analyzeDownloadedFiles() async {
-  final status = await Permission.storage.request();
-  if (!status.isGranted) return 0;
+Future<int> analyzeDownloadedFiles({
+  required void Function(String?) onIntermediateMessage,
+}) async {
+  onIntermediateMessage("📁 Analizando archivos descargados...");
 
-  // Accede a la carpeta de descargas
+  final status = await Permission.storage.request();
+  if (!status.isGranted) {
+    onIntermediateMessage(null);
+    return 0;
+  }
+
   final downloadDir = Directory('/storage/emulated/0/Download');
-  if (!downloadDir.existsSync()) return 0;
+  if (!downloadDir.existsSync()) {
+    onIntermediateMessage(null);
+    return 0;
+  }
 
   final files = downloadDir
       .listSync()
@@ -36,5 +45,6 @@ Future<int> analyzeDownloadedFiles() async {
     }
   }
 
+  onIntermediateMessage(null);
   return detected;
 }

@@ -31,8 +31,8 @@ Future<SmsAnalysisResult> analyzeSMS(
 ) async {
   final SmsQuery query = SmsQuery();
 
-  // Muestra mensaje de análisis en progreso
-  onIntermediateMessage("🔍 Analizando un momento...");
+  // Muestra mensaje inicial de análisis
+  onIntermediateMessage("🔍 Analizando mensajes SMS...");
 
   // Solicita permiso de acceso a SMS
   var status = await Permission.sms.request();
@@ -64,7 +64,7 @@ Future<SmsAnalysisResult> analyzeSMS(
     return SmsAnalysisResult(0, null, []);
   }
 
-  // 🔽 Filtra los mensajes por fecha: últimos 10 días
+  // Filtra mensajes recibidos en los últimos 10 días
   final now = DateTime.now();
   final threshold = now.subtract(const Duration(days: 10));
   final recentMessages = messages.where((sms) {
@@ -72,35 +72,32 @@ Future<SmsAnalysisResult> analyzeSMS(
     return date != null && date.isAfter(threshold);
   }).toList();
 
-  int count = 0; // Contador de mensajes sospechosos
-  String? sample; // Mensaje de ejemplo
-  List<String> suspiciousList = []; // Lista completa de mensajes sospechosos
+  int count = 0;
+  String? sample;
+  List<String> suspiciousList = [];
 
-  // Analiza cada mensaje reciente usando el backend
+  // Analiza cada mensaje usando el backend
   for (var sms in recentMessages) {
     final content = sms.body ?? '';
 
     final response = await http.post(
-      Uri.parse(
-          'https://web-production-0f002.up.railway.app/analyze'), // Backend en Railway
+      Uri.parse('https://web-production-0f002.up.railway.app/analyze'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode({'message': content}), // Envía mensaje como JSON
+      body: json.encode({'message': content}),
     );
 
-    // Si el backend responde correctamente...
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
       if (result['suspicious'] == true) {
         count++;
-        sample ??= content; // Guarda el primer mensaje como ejemplo
-        suspiciousList.add(content); // Agrega a la lista de sospechosos
+        sample ??= content;
+        suspiciousList.add(content);
       }
     }
   }
 
-  // Limpia el mensaje de análisis en pantalla
+  // Limpia mensaje de análisis
   onIntermediateMessage(null);
 
-  // Devuelve el resultado completo
   return SmsAnalysisResult(count, sample, suspiciousList);
 }

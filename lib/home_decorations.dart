@@ -17,6 +17,7 @@ Widget buildDecorativeSections({
   required User user,
   String? sampleMessage, // Mensaje de ejemplo tras análisis
   String? analyzingMessage, // Mensaje temporal mientras analiza
+  int? fileThreatsCount, // 🔍 Nuevo: contador de archivos detectados
 }) {
   return Stack(
     children: [
@@ -42,11 +43,11 @@ Widget buildDecorativeSections({
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.only(left: 20),
+            Padding(
+              padding: const EdgeInsets.only(left: 20),
               child: Text(
-                'Virus Encontrados:',
-                style: TextStyle(
+                'Virus Encontrados: ${fileThreatsCount ?? 0}',
+                style: const TextStyle(
                   color: Colors.white,
                   fontFamily: 'Open',
                   fontSize: 16,

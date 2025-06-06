@@ -1,25 +1,16 @@
-// Importaciones necesarias
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:video_player/video_player.dart';
 
-// Importa widgets reutilizables y decoraciones organizadas en archivos separados
 import 'home_widgets.dart' as widgets;
 import 'home_decorations.dart' as decorations;
-
-// Función para analizar SMS y mostrar advertencias
 import 'sms_analyzer.dart';
-
-// Función para analizar archivos descargados
 import 'file_analyzer.dart';
+import 'informations_sms.dart';
 
-// Modal informativo personalizado para mostrar mensajes sospechosos
-import 'informations_sms.dart'; // ✅ Importa la función del modal
-
-// Widget con estado que representa el layout principal de la pantalla de inicio
 class HomePageLayout extends StatefulWidget {
-  final VideoPlayerController videoController; // Video de fondo
-  final User user; // Usuario autenticado
+  final VideoPlayerController videoController;
+  final User user;
 
   const HomePageLayout({
     super.key,
@@ -32,18 +23,18 @@ class HomePageLayout extends StatefulWidget {
 }
 
 class HomePageLayoutState extends State<HomePageLayout> {
-  int suspiciousCount = 0; // Contador de SMS sospechosos detectados
-  int virusCount = 0; // Contador de archivos potencialmente peligrosos
-  String? sampleMessage; // Muestra uno de los mensajes detectados
-  String? analyzingMessage; // Mensaje temporal durante el análisis
-  List<String> suspiciousMessages = []; // Lista de mensajes sospechosos
+  int suspiciousCount = 0;
+  int virusCount = 0;
+  String? sampleMessage;
+  String? analyzingMessage;
+  List<String> suspiciousMessages = [];
 
-  // Función que inicia el análisis de los SMS y archivos
   void _startSmsAnalysis() async {
     setState(() {
       analyzingMessage = "🔍 Analizando un momento...";
     });
 
+    // Analiza SMS
     final smsResult = await analyzeSMS(
       context,
       (intermediateText) {
@@ -53,8 +44,16 @@ class HomePageLayoutState extends State<HomePageLayout> {
       },
     );
 
-    final fileCount = await analyzeDownloadedFiles();
+    // Analiza archivos y muestra mensaje "📁 Analizando archivos..."
+    final fileCount = await analyzeDownloadedFiles(
+      onIntermediateMessage: (intermediateText) {
+        setState(() {
+          analyzingMessage = intermediateText;
+        });
+      },
+    );
 
+    // Guarda resultados y limpia mensaje
     setState(() {
       suspiciousCount = smsResult.count;
       sampleMessage = smsResult.sampleMessage;
@@ -87,7 +86,7 @@ class HomePageLayoutState extends State<HomePageLayout> {
 
             widgets.buildSolveButton(screenWidth, suspiciousMessages, context),
 
-            // Indicador visual con número de mensajes sospechosos
+            // ✅ Indicador de SMS sospechosos
             Positioned(
               top: 300,
               left: 70,
@@ -112,7 +111,7 @@ class HomePageLayoutState extends State<HomePageLayout> {
                   Padding(
                     padding: const EdgeInsets.only(left: 20),
                     child: Text(
-                      'Mensajes de SMS: \$suspiciousCount | Virus encontrados: \$virusCount',
+                      'Mensajes de SMS: $suspiciousCount',
                       style: const TextStyle(
                         color: Colors.white,
                         fontFamily: 'Open',
@@ -139,6 +138,7 @@ class HomePageLayoutState extends State<HomePageLayout> {
               showInformationSMSDialog(context);
             }),
 
+            // ✅ Zona decorativa con resultados de análisis
             decorations.buildDecorativeSections(
               context: context,
               screenWidth: screenWidth,
@@ -148,6 +148,8 @@ class HomePageLayoutState extends State<HomePageLayout> {
               user: widget.user,
               sampleMessage: sampleMessage,
               analyzingMessage: analyzingMessage,
+              fileThreatsCount:
+                  virusCount, // 👈 contador de archivos detectados
             ),
           ],
         ),
