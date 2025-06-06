@@ -21,10 +21,10 @@ dependencies:
   flutter_sms_inbox: ^1.0.3
   connectivity_plus: ^4.0.2
   url_launcher: ^6.2.5
-
+  file_picker: ^6.1.1
 
   # ✅ Plugins para análisis de SMS
-  permission_handler: ^11.3.0 
+  permission_handler: ^11.3.0
     # ← 👈 Nuevo plugin agregado
 
 dev_dependencies:
