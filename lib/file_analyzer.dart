@@ -1,43 +1,40 @@
 import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-Future<int> analizarArchivosEnDescargas() async {
-  // Solicitar permisos
-  final permiso = await Permission.storage.request();
-  if (!permiso.isGranted) return 0;
+Future<int> analyzeDownloadedFiles() async {
+  final status = await Permission.storage.request();
+  if (!status.isGranted) return 0;
 
-  // Obtener la carpeta de descargas
-  final Directory? downloadsDir = Directory('/storage/emulated/0/Download');
-  if (downloadsDir == null || !downloadsDir.existsSync()) return 0;
+  // Accede a la carpeta de descargas
+  final downloadDir = Directory('/storage/emulated/0/Download');
+  if (!downloadDir.existsSync()) return 0;
 
-  final archivos = downloadsDir.listSync();
-  int sospechosos = 0;
+  final files = downloadDir
+      .listSync()
+      .whereType<File>()
+      .where((file) =>
+          file.path.endsWith('.pdf') ||
+          file.path.endsWith('.docx') ||
+          file.path.endsWith('.apk'))
+      .toList();
 
-  for (final archivo in archivos) {
-    if (archivo is File) {
-      final uri = Uri.parse(
-          'https://hybrid-analysis-backend-production.up.railway.app/escanear');
-      final request = http.MultipartRequest('POST', uri)
-        ..files.add(await http.MultipartFile.fromPath('file', archivo.path));
+  int detected = 0;
+  for (final file in files) {
+    final uri = Uri.parse(
+        'https://hybrid-analysis-backend-production.up.railway.app/escanear');
+    final request = http.MultipartRequest('POST', uri);
+    request.files.add(await http.MultipartFile.fromPath('file', file.path));
+    final response = await request.send();
 
-      try {
-        final response = await request.send();
-        if (response.statusCode == 200) {
-          final cuerpo = await response.stream.bytesToString();
-          if (cuerpo.contains('"threat_score":') &&
-              !cuerpo.contains('"threat_score":0')) {
-            sospechosos++;
-          }
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print('Error al enviar archivo: $e');
-        }
-      }
+    if (response.statusCode == 200) {
+      final respStr = await response.stream.bytesToString();
+      final json = jsonDecode(respStr);
+      final score = json['threat_score'] ?? 0;
+      if (score >= 1) detected++;
     }
   }
 
-  return sospechosos;
+  return detected;
 }

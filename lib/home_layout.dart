@@ -10,6 +10,9 @@ import 'home_decorations.dart' as decorations;
 // Función para analizar SMS y mostrar advertencias
 import 'sms_analyzer.dart';
 
+// Función para analizar archivos descargados
+import 'file_analyzer.dart';
+
 // Modal informativo personalizado para mostrar mensajes sospechosos
 import 'informations_sms.dart'; // ✅ Importa la función del modal
 
@@ -30,19 +33,18 @@ class HomePageLayout extends StatefulWidget {
 
 class HomePageLayoutState extends State<HomePageLayout> {
   int suspiciousCount = 0; // Contador de SMS sospechosos detectados
+  int virusCount = 0; // Contador de archivos potencialmente peligrosos
   String? sampleMessage; // Muestra uno de los mensajes detectados
   String? analyzingMessage; // Mensaje temporal durante el análisis
-  List<String> suspiciousMessages =
-      []; // ✅ Lista completa de mensajes sospechosos
+  List<String> suspiciousMessages = []; // Lista de mensajes sospechosos
 
-  // Función que inicia el análisis de los SMS
+  // Función que inicia el análisis de los SMS y archivos
   void _startSmsAnalysis() async {
     setState(() {
       analyzingMessage = "🔍 Analizando un momento...";
     });
 
-    // Llama a la función de análisis y actualiza resultados en tiempo real
-    final result = await analyzeSMS(
+    final smsResult = await analyzeSMS(
       context,
       (intermediateText) {
         setState(() {
@@ -51,11 +53,13 @@ class HomePageLayoutState extends State<HomePageLayout> {
       },
     );
 
-    // Al finalizar, guarda los resultados
+    final fileCount = await analyzeDownloadedFiles();
+
     setState(() {
-      suspiciousCount = result.count;
-      sampleMessage = result.sampleMessage;
-      suspiciousMessages = result.suspiciousMessages;
+      suspiciousCount = smsResult.count;
+      sampleMessage = smsResult.sampleMessage;
+      suspiciousMessages = smsResult.suspiciousMessages;
+      virusCount = fileCount;
       analyzingMessage = null;
     });
   }
@@ -65,7 +69,6 @@ class HomePageLayoutState extends State<HomePageLayout> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Calcula posición del logo central
     final double logoTop =
         widgets.circleTop + (widgets.circleArea - decorations.logoHeight) / 2;
     final double logoLeft = (screenWidth - decorations.logoWidth) / 2;
@@ -75,20 +78,16 @@ class HomePageLayoutState extends State<HomePageLayout> {
       body: SafeArea(
         child: Stack(
           children: [
-            // ✅ Video de fondo si está inicializado
             if (widget.videoController.value.isInitialized)
               widgets.buildBackgroundVideo(widget.videoController),
 
-            // ✅ Círculo borroso decorativo de fondo
             widgets.buildBlurredCircle(screenWidth),
 
-            // ✅ Botón "Analizar" que inicia el análisis de SMS
             widgets.buildAnalyzeButton(screenWidth, _startSmsAnalysis),
 
-            // ✅ Botón "Solucionar" que muestra opciones según los SMS sospechosos
             widgets.buildSolveButton(screenWidth, suspiciousMessages, context),
 
-            // ✅ Indicador visual con número de mensajes sospechosos
+            // Indicador visual con número de mensajes sospechosos
             Positioned(
               top: 300,
               left: 70,
@@ -113,7 +112,7 @@ class HomePageLayoutState extends State<HomePageLayout> {
                   Padding(
                     padding: const EdgeInsets.only(left: 20),
                     child: Text(
-                      'Mensajes de SMS: $suspiciousCount',
+                      'Mensajes de SMS: \$suspiciousCount | Virus encontrados: \$virusCount',
                       style: const TextStyle(
                         color: Colors.white,
                         fontFamily: 'Open',
@@ -126,7 +125,6 @@ class HomePageLayoutState extends State<HomePageLayout> {
               ),
             ),
 
-            // ✅ Icono de SMS a la izquierda del indicador
             Positioned(
               top: 300,
               left: 20,
@@ -137,13 +135,10 @@ class HomePageLayoutState extends State<HomePageLayout> {
               ),
             ),
 
-            // ✅ Botón de información que abre un modal con los mensajes sospechosos
             widgets.buildInfoButton(screenWidth, () {
-              showInformationSMSDialog(
-                  context); // ✅ Llama directamente a la función
+              showInformationSMSDialog(context);
             }),
 
-            // ✅ Sección decorativa inferior (textos, contenedor, etc.)
             decorations.buildDecorativeSections(
               context: context,
               screenWidth: screenWidth,
